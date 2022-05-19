@@ -1,62 +1,136 @@
-module Binary_To_7Segment
+// Code Implements displaying two digit number between 0 and 99 on the seven segment display on pushing button 1. 
+// Button 2 press will reset all numbers
+// Base code provided by nandland.com , additional functionalities implemented by Yasir Sultani.
+
+
+module Prject_7_Segment_top
 	(input i_Clk,
-	 input [3:0] i_Binary_Num,
-	 output o_Segment_A,
-	 output o_Segment_B,
-	 output o_Segment_C,
-	 output o_Segment_D,
-	 output o_Segment_E,
-	 output o_Segment_F,
-	 output o_Segment_G);
+	 input i_Switch_1,
+	 input i_Switch_2,
+	 output o_Segment2_A,
+	 output o_Segment2_B,
+	 output o_Segment2_C,
+	 output o_Segment2_D,
+	 output o_Segment2_E,
+	 output o_Segment2_F,
+	 output	o_Segment2_G,
+	 output o_Segment1_A,
+	 output o_Segment1_B,
+	 output o_Segment1_C,
+	 output o_Segment1_D,
+	 output o_Segment1_E,
+	 output o_Segment1_F,
+	 output	o_Segment1_G
+	);
 	 
-	reg [6:0] r_Hex_Encodig = 7'h00;
+	wire w_Switch_1;
+	wire w_Switch_2;
+	
+	reg r_Switch_1 = 1'b0;
+	reg r_Switch_2 = 1'b0;
+	
+	reg [3:0] r_Count_ones = 4'b0000;
+	reg [3:0] r_Count_tens = 4'b0000;
+
+	wire w_Segment2_A;
+	wire w_Segment2_B;
+	wire w_Segment2_C;
+	wire w_Segment2_D;
+	wire w_Segment2_E;
+	wire w_Segment2_F;
+	wire w_Segment2_G;
+	wire w_Segment1_A;
+	wire w_Segment1_B;
+	wire w_Segment1_C;
+	wire w_Segment1_D;
+	wire w_Segment1_E;
+	wire w_Segment1_F;
+	wire w_Segment1_G;
+
+ Debounce_Switch Debounce_Switch_Inst
+	(.i_Clk(i_Clk),
+	 .i_Switch(i_Switch_1),
+	 .o_Switch(w_Switch_1));
+	 
+ Debounce_Switch Debounce_Switch_Inst2
+	(.i_Clk(i_Clk),
+	 .i_Switch(i_Switch_2),
+	 .o_Switch(w_Switch_2));
+	
+	//Purpose: When Switch is pressed, increment counter.
+	// When counter gets to 9, start back at 0 again.
 	
 	always @(posedge i_Clk)
-		begin
-			case(i_Binary_Num)
-				4'b0000 :
-					r_Hex_Encodig <= 7'h7E;
-				4'b0001 :
-					r_Hex_Encodig <= 7'h30;
-				4'b0010 :
-					r_Hex_Encodig <= 7'h6D;
-				4'b0011 :
-					r_Hex_Encodig <= 7'h79;
-				4'b0100 :
-					r_Hex_Encodig <= 7'h33;
-				4'b0101 :
-					r_Hex_Encodig <= 7'h5B;
-				4'b0110 :
-					r_Hex_Encodig <= 7'h5F;
-				4'b0111 :
-					r_Hex_Encodig <= 7'h70;
-				4'b1000 :
-					r_Hex_Encodig <= 7'h7F;
-				4'b1001 :
-					r_Hex_Encodig <= 7'h7B;
-				4'b1010 :
-					r_Hex_Encodig <= 7'h77;
-				4'b1011 :
-					r_Hex_Encodig <= 7'h1F;
-				4'b1100 :
-					r_Hex_Encodig <= 7'h4E;
-				4'b1101 :
-					r_Hex_Encodig <= 7'h3D;
-				4'b1110 :
-					r_Hex_Encodig <= 7'h4F;
-				4'b111 :
-					r_Hex_Encodig <= 7'h47;
-			endcase
-		end //always @ (posedge i_Clk)
+	begin
+		r_Switch_1<= w_Switch_1;
 		
-	// r_Hex_Encodig[7] is unused
-	assign o_Segment_A = r_Hex_Encodig[6];
-	assign o_Segment_B = r_Hex_Encodig[5];
-	assign o_Segment_C = r_Hex_Encodig[4];
-	assign o_Segment_D = r_Hex_Encodig[3];
-	assign o_Segment_E = r_Hex_Encodig[2];
-	assign o_Segment_F = r_Hex_Encodig[1];
-	assign o_Segment_G = r_Hex_Encodig[0];
+		//increment Count when switch is pushed
+		if (w_Switch_1 ==1'b1 && r_Switch_1 == 1'b0)
+		begin
+			if (r_Count_ones == 9)
+				begin
+					//chagning second display
+					if (r_Count_tens == 9)
+						r_Count_tens <= 0;
+					else
+						r_Count_tens <= r_Count_tens +1;
+					
+					r_Count_ones <= 0;
+				end
+			else
+				r_Count_ones <= r_Count_ones+1;
+				
+			// If switch 2 pressed. Reset bouth counters	
+			if (w_Switch_2 ==1'b1 && r_Switch_2 == 1'b0)
+				begin
+				r_Count_ones <= 0;
+				r_Count_tens <= 0;
+				end
+			
+			
+		end
+
+	end
 	
-endmodule //Binary_To_7Segment
-	 
+	// Instantiate  Binary to 7-Segment Converter
+	Binary_To_7Segment InstOnes
+		(.i_Clk(i_Clk),
+		 .i_Binary_Num(r_Count_ones),
+		 .o_Segment_A(w_Segment2_A),
+		 .o_Segment_B(w_Segment2_B),
+		 .o_Segment_C(w_Segment2_C),
+		 .o_Segment_D(w_Segment2_D),
+		 .o_Segment_E(w_Segment2_E),
+		 .o_Segment_F(w_Segment2_F),
+		 .o_Segment_G(w_Segment2_G)
+		 );
+	Binary_To_7Segment InstTens
+		(.i_Clk(i_Clk),
+		 .i_Binary_Num(r_Count_tens),
+		 .o_Segment_A(w_Segment1_A),
+		 .o_Segment_B(w_Segment1_B),
+		 .o_Segment_C(w_Segment1_C),
+		 .o_Segment_D(w_Segment1_D),
+		 .o_Segment_E(w_Segment1_E),
+		 .o_Segment_F(w_Segment1_F),
+		 .o_Segment_G(w_Segment1_G)
+		 );
+		 
+	
+	assign o_Segment2_A = ~w_Segment2_A;
+	assign o_Segment2_B = ~w_Segment2_B;
+	assign o_Segment2_C = ~w_Segment2_C;
+	assign o_Segment2_D = ~w_Segment2_D;
+	assign o_Segment2_E = ~w_Segment2_E;
+	assign o_Segment2_F = ~w_Segment2_F;
+	assign o_Segment2_G = ~w_Segment2_G;
+	assign o_Segment1_A = ~w_Segment1_A;
+	assign o_Segment1_B = ~w_Segment1_B;
+	assign o_Segment1_C = ~w_Segment1_C;
+	assign o_Segment1_D = ~w_Segment1_D;
+	assign o_Segment1_E = ~w_Segment1_E;
+	assign o_Segment1_F = ~w_Segment1_F;
+	assign o_Segment1_G = ~w_Segment1_G;
+	
+	
+endmodule // Prject_7_Segment_top
