@@ -63,6 +63,7 @@ module Prject_7_Segment_top
 	always @(posedge i_Clk)
 	begin
 		r_Switch_1<= w_Switch_1;
+		r_Switch_2<= w_Switch_2;
 		
 		//increment Count when switch is pushed
 		if (w_Switch_1 ==1'b1 && r_Switch_1 == 1'b0)
@@ -79,16 +80,16 @@ module Prject_7_Segment_top
 				end
 			else
 				r_Count_ones <= r_Count_ones+1;
-				
+		end		
 			// If switch 2 pressed. Reset bouth counters	
-			if (w_Switch_2 ==1'b1 && r_Switch_2 == 1'b0)
-				begin
+		if (w_Switch_2 ==1'b1 && r_Switch_2 == 1'b0)
+			begin
 				r_Count_ones <= 0;
 				r_Count_tens <= 0;
-				end
+			end
 			
 			
-		end
+		
 
 	end
 	
